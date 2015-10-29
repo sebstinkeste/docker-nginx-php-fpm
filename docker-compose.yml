@@ -1,0 +1,33 @@
+sources:
+  image: busybox
+  volumes:
+    - ./www:/var/www/html
+
+nginx:
+  build: ./nginx
+  links:
+    - php:phpfpm
+  volumes_from:
+    - sources
+  ports:
+    - 80
+    - 443
+  environment:
+    DOCUMENT_ROOT: /var/www/html
+    DIRECTORY_INDEX: index.php index.html
+    FASTCGI_PASS:  "phpfpm:9000"
+    SERVER_NAME: "localhost"
+    FASTCGI_INDEX: "index.php"
+
+php:
+  image: awhub/php:5.6-fpm
+  volumes_from:
+      - sources
+  environment:
+    PHP__display_errors: 'On'
+    PHP__opcache.enable: 'Off'
+    PHP__memory_limit:   '128M'
+    PHP__post_max_size:  '50M'
+    PHP__date.timezone:  '"Europe/Paris"'
+    PHP_php5enmod: 'opcache'
+
